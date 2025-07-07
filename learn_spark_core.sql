@@ -48,4 +48,96 @@ df_final.show()
 df_city=mydata2.groupBy('City').agg(avg('clean_salary').alias('city_sal'))
 
 df3 = df_city.sort(col('city_sal').desc())
+df3.show
+
+
+df = sc.read.csv('/content/sample_data/original.csv',header='true')
+
+df.dtypes
+
+[('id', 'string'),
+ ('first_name', 'string'),
+ ('last_name', 'string'),
+ ('gender', 'string'),
+ ('City', 'string'),
+ ('JobTitle', 'string'),
+ ('Salary', 'string'),
+ ('Latitude', 'string'),
+ ('Longitude', 'string')]
+ 
+#defining schema for TABLE
+
+from pyspark.sql.types import *
+
+myscehma = StructType([
+StructField("Id",IntegerType()),
+StructField("First_Name",StringType()),
+StructField("Last_Name",StringType()),
+StructField("gender",StringType()),
+StructField("City",StringType()),
+StructField("Job_Title",StringType()),
+StructField("Salary",StringField()),
+StructField("Latitude",FloatType()),
+StructField("Longitude",FloatType())
+]
+)
+
+df = sc.read.csv('/content/sample_data/original.csv',header='true',schema=myscehma)
+
+df.dtypes
+
+[('Id', 'int'),
+ ('First_Name', 'string'),
+ ('Last_Name', 'string'),
+ ('gender', 'string'),
+ ('City', 'string'),
+ ('Job_Title', 'string'),
+ ('Salary', 'string'),
+ ('Latitude', 'float'),
+ ('Longitude', 'float')]
+ 
+ #get first 10 rows
+ df.head(10)
+ 
+ #get first row
+ df.first()
+ 
+ df.distinct().count()
+ 
+ df.describe().show()
+ 
+ 
+ df.columns
+ 
+ #clear all null rows
+ 
+ df2 = df.na.drop()
+ df2.show()
+ 
+df_select = df.select('First_Name','gender')
+df_select.show()
+
+df3 = df.withColumnRenamed('First_name','FN')
 df3.show()
+
+df3=df.filter(df.First_Name.startswith('end'))
+
+df3.show()
+
+df4 = df.filter(df.Id.between(3,5))
+df4.show()
+
+df4 = df.filter(df.First_Name.like('%ND%') & df.City.isin('New'))
+df4.show()
+
+df.createOrReplaceTempView('tmpTab')
+df5=sc.sql("select * from tmpTab")
+df5.show()
+qry = sc.sql("select concat(First_Name,' ',Last_Name) as Name from tmpTab")
+qry.show()
+
+df4=df.withColumn('MorF',when(df.gender=='Male','YES').otherwise('NO'))
+df4.show()
+
+#df4.write.csv('myfile.csv')
+df4.write.json('myjsonfile.json')
